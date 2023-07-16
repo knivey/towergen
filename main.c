@@ -57,15 +57,14 @@ int main(int argc, char *argv[]) {
         // left side
         char *test_str = buffer;
         int test_str_i = 0;
-        int current_color = 98;
         // generate left side 'sky' and code or whatever file you want to read in
         // one idea is that we should have magical words or something
         fg = 0;
         // every 8 rows change the bg color for the gradient
-        bg = 88 + (int)floor(cnt/(total_rows/11.0d)) % 11;
+        bg = 88 + (int)floor(cnt/(total_rows/11.0)) % 11;
 
         printf("\x03%02d,%02d", fg, bg);
-        for (int i = 0; i < left_side_cols - (int)round(sin(rows / 4.0) * 5.0); i++) {
+        for (int i = 0; i < left_side_cols - (int)round(sin(rows / 9.0) * 5.0); i++) {
             char c = test_str[test_str_i++];
             // branch-less technique
             int exp = c!='\n' && c != '\0' && c != ' ';
@@ -78,23 +77,23 @@ int main(int argc, char *argv[]) {
         // this is the gray-scale tower, colors 98-88
         fg_backup = fg;
         bg_backup = bg;
-        for(int i=0; i<10; i++) {
+        for(double i=0; i<30; i++) {
+            int current_color = 88 + round(sin(i/12.0)*10.0);
         //while (current_color > 88) {
             // generate a window
             // branch-less technique
-            int exp = i==4 && rows < starting_rows && rows % 4 == 0;
+            int exp = (i==9 || i == 10) && rows < starting_rows && (rows % 8 == 0 || rows % 8 == 1);
             fg = (88 * exp) + (current_color * !exp);
             bg = (88 * exp) + (current_color * !exp);
             printf("\x03%02d,%02d", fg, bg);
             putchar(' ');
-            current_color--;
             test_str_i++; // for incrementing through our file buffer
         }
         // right side
         fg = fg_backup;
         bg = bg_backup;
         printf("\x03%02d,%02d", fg, bg);
-        for (int i = 0; i < right_side_cols + (int)round(sin(rows / 4.0) * 5.0); i++) {
+        for (int i = 0; i < right_side_cols + (int)round(sin(rows / 9.0) * 5.0); i++) {
             char c = test_str[test_str_i++];
             // branch-less technique
             int exp = c!='\n' && c != '\0' && c != ' ';
