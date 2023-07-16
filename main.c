@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     int bg_backup = fg;
     const int left_side_cols = 30;
     const int right_side_cols = 30;
-    const int tower_width = 10;
+    const int tower_width = 30;
     const int total_width = left_side_cols + tower_width + right_side_cols;
     size_t tower_title_len = strlen(tower_title);
     const int left_side_pad = (total_width - tower_title_len) / 2;
@@ -60,11 +60,25 @@ int main(int argc, char *argv[]) {
         // generate left side 'sky' and code or whatever file you want to read in
         // one idea is that we should have magical words or something
         fg = 0;
-        // every 8 rows change the bg color for the gradient
-        bg = 88 + (int)floor(cnt/(total_rows/11.0)) % 11;
+        // figure out the background gradient
+        //int base_bg = 88 + (int)floor(cnt/(total_rows/11.0)) % 11;
+        double dither = (cnt / (total_rows/11.0)) - 0.5;
+        double dither_i = 11;
+        dither = modf(dither, &dither_i);
+        int base_bg = 88 + (int)dither_i;
+        int bg = base_bg;
 
         printf("\x03%02d,%02d", fg, bg);
         for (int i = 0; i < left_side_cols - (int)round(sin(rows / 9.0) * 5.0); i++) {
+            if (base_bg != 98 && rand() < RAND_MAX * dither) {
+                if(bg == base_bg) {
+                    bg = 88 + (base_bg - 88 + 1) % 11;
+                    printf("\x03%02d,%02d", fg, bg);
+                }
+            } else if (bg != base_bg) {
+                bg = base_bg;
+                printf("\x03%02d,%02d", fg, bg);
+            }
             char c = test_str[test_str_i++];
             // branch-less technique
             int exp = c!='\n' && c != '\0' && c != ' ';
@@ -77,7 +91,7 @@ int main(int argc, char *argv[]) {
         // this is the gray-scale tower, colors 98-88
         fg_backup = fg;
         bg_backup = bg;
-        for(double i=0; i<30; i++) {
+        for(double i=0; i<tower_width; i++) {
             int current_color = 88 + round(sin(i/12.0)*10.0);
         //while (current_color > 88) {
             // generate a window
@@ -94,6 +108,15 @@ int main(int argc, char *argv[]) {
         bg = bg_backup;
         printf("\x03%02d,%02d", fg, bg);
         for (int i = 0; i < right_side_cols + (int)round(sin(rows / 9.0) * 5.0); i++) {
+            if (base_bg != 98 && rand() < RAND_MAX * dither) {
+                if(bg == base_bg) {
+                    bg = 88 + (base_bg - 88 + 1) % 11;
+                    printf("\x03%02d,%02d", fg, bg);
+                }
+            } else if (bg != base_bg) {
+                bg = base_bg;
+                printf("\x03%02d,%02d", fg, bg);
+            }
             char c = test_str[test_str_i++];
             // branch-less technique
             int exp = c!='\n' && c != '\0' && c != ' ';
