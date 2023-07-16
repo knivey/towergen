@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdbool.h>
+#include <math.h>
 
 void generate_top_rows_empty(int fg, int bg, int total_width);
 void generate_top_rows_title(int fg, int bg, int left_side_pad, int right_side_pad, char *tower_title);
@@ -17,7 +18,8 @@ int main(int argc, char *argv[]) {
     // if no filepath, no problem
     char *tower_title = "The Tower Of The Darkmage";
     int rows = atoi(argv[1]);
-    int starting_rows = rows;
+    double total_rows = rows;
+    float starting_rows = rows;
     int fg = 0;
     int bg = 88;
     int fg_backup = fg;
@@ -45,7 +47,9 @@ int main(int argc, char *argv[]) {
     // tower loop
     fg = 0;
     bg = 88;
+    double cnt = -1;
     while (rows > 0) {
+        cnt++;
         bzero(buffer, 1024);
         while(infile && !feof(infile) && strcmp(buffer, "") == 0) {
             fgets(buffer, 1024, infile);
@@ -57,14 +61,11 @@ int main(int argc, char *argv[]) {
         // generate left side 'sky' and code or whatever file you want to read in
         // one idea is that we should have magical words or something
         fg = 0;
-        // this allows us to have a gradient of colors
-        // every mod rows we shift color by 1
-        bg = ((bg+1) * (rows % 8==0 && rows < starting_rows)) + 
-              (bg *    (rows % 8 || rows >= starting_rows));
-        // to make sure we dont go past 98, this will go back to 88 when we hit it
-        bg = (bg * (bg <= 98)) + (88 * (bg > 98)); 
+        // every 8 rows change the bg color for the gradient
+        bg = 88 + (int)floor(cnt/(total_rows/11.0d)) % 11;
+
         printf("\x03%02d,%02d", fg, bg);
-        for (int i = 0; i < left_side_cols; i++) {
+        for (int i = 0; i < left_side_cols - (int)round(sin(rows / 4.0) * 5.0); i++) {
             char c = test_str[test_str_i++];
             // branch-less technique
             int exp = c!='\n' && c != '\0' && c != ' ';
@@ -93,7 +94,7 @@ int main(int argc, char *argv[]) {
         fg = fg_backup;
         bg = bg_backup;
         printf("\x03%02d,%02d", fg, bg);
-        for (int i = 0; i < right_side_cols; i++) {
+        for (int i = 0; i < right_side_cols + (int)round(sin(rows / 4.0) * 5.0); i++) {
             char c = test_str[test_str_i++];
             // branch-less technique
             int exp = c!='\n' && c != '\0' && c != ' ';

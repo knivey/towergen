@@ -1,5 +1,5 @@
 
-CFLAGS=-Wall -g
+CFLAGS=-Wall -g -lm
 BIN=towergen
 
 all: $(BIN)
